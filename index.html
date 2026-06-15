@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none, viewport-fit=cover">
     <title>ТАПАТЕЛЬ 303 REBOOT</title>
     <link rel="manifest" href="manifest.json">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/REBOOT-TAPATEL-303/sw.js')
+      .then(() => console.log('Офлайн-скрипт готов!'))
+      .catch(err => console.log('Ошибка:', err));
+  }
+</script>
+
     <style>
         :root {
             --primary-yellow: #ffeb3b; --secondary-yellow: #ffc107; --accent-orange: #ff9800;

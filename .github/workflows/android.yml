@@ -1,0 +1,36 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Bubblewrap CLI
+      run: npm install -g @bubblewrap/cli
+
+    - name: Initialize and Build APK
+      run: |
+        # Собираем настройки на основе твоего опубликованного манифеста
+        bubblewrap init --manifest="https://koshel0400-tech.github.io/REBOOT-TAPATEL-303/manifest.json" --meta=./twa-manifest.json --pwa
+        
+        # Запускаем компиляцию APK и подписываем стандартным ключом
+        bubblewrap build --meta=./twa-manifest.json --signingKeyPath=./android.keystore --signingKeyPassword="password123" --keyPairPassword="password123" --keyPairAlias="android"
+        
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tapatel-APK
+        path: ./*.apk

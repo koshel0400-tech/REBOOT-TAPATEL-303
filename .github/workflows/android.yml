@@ -21,12 +21,39 @@ jobs:
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Initialize and Build APK
+    - name: Create Bubblewrap Config and Build
       run: |
-        # Собираем настройки на основе твоего опубликованного манифеста
-        bubblewrap init --manifest="https://koshel0400-tech.github.io/REBOOT-TAPATEL-303/manifest.json" --meta=./twa-manifest.json --pwa
-        
-        # Запускаем компиляцию APK и подписываем стандартным ключом
+        # Создаем готовый файл настроек, чтобы сборщик не задавал вопросы в консоли
+        echo '{
+          "twaName": "TAPATEL 303 REBOOT",
+          "launches": [{"url": "https://koshel0400-tech.github.io/REBOOT-TAPATEL-303/"}],
+          "packageId": "com.koshel0400tech.tapatel303",
+          "host": "koshel0400-tech.github.io",
+          "startUrl": "/REBOOT-TAPATEL-303/index.html",
+          "themeColor": "#000000",
+          "navigationColor": "#000000",
+          "backgroundColor": "#ffffff",
+          "actionColor": "#000000",
+          "appVersionCode": 1,
+          "appVersionName": "1.0.0",
+          "display": "standalone",
+          "orientation": "default",
+          "shortcuts": [],
+          "features": {},
+          "alphaDependencies": false,
+          "signingKey": {
+            "path": "./android.keystore",
+            "alias": "android"
+          },
+          "generatorApp": "bubblewrap-cli",
+          "webManifestUrl": "https://koshel0400-tech.github.io/REBOOT-TAPATEL-303/manifest.json",
+          "fallbackType": "customtabs"
+        }' > ./twa-manifest.json
+
+        # Генерируем Android-проект без лишних вопросов
+        bubblewrap update --meta=./twa-manifest.json
+
+        # Собираем APK и автоматически подписываем его
         bubblewrap build --meta=./twa-manifest.json --signingKeyPath=./android.keystore --signingKeyPassword="password123" --keyPairPassword="password123" --keyPairAlias="android"
         
     - name: Upload APK Artifact

@@ -13,17 +13,21 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
+    - name: Set up Java
+      uses: actions/setup-java@v4
       with:
-        node-version: '20'
+        distribution: 'zulu'
+        java-version: '17'
 
     - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Create Bubblewrap Config and Build
+    - name: Generate Signing Key and Build
       run: |
-        # Создаем готовый файл настроек, чтобы сборщик не задавал вопросы в консоли
+        # Автоматически создаем ключ подписи Android Keystore, чтобы сборщик не зависал
+        keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 10000 -storepass password123 -keypass password123 -dname "CN=Tapatel, OU=Dev, O=Game, L=City, S=State, C=US"
+        
+        # Создаем конфигурационный файл
         echo '{
           "twaName": "TAPATEL 303 REBOOT",
           "launches": [{"url": "https://koshel0400-tech.github.io/REBOOT-TAPATEL-303/"}],
@@ -50,14 +54,15 @@ jobs:
           "fallbackType": "customtabs"
         }' > ./twa-manifest.json
 
-        # Генерируем Android-проект без лишних вопросов
+        # Инициализируем и собираем
+        bubblewrap openjdk:install --acceptLicense
+        bubblewrap androidSdk:install --acceptLicense
         bubblewrap update --meta=./twa-manifest.json
-
-        # Собираем APK и автоматически подписываем его
-        bubblewrap build --meta=./twa-manifest.json --signingKeyPath=./android.keystore --signingKeyPassword="password123" --keyPairPassword="password123" --keyPairAlias="android"
+        bubblewrap build --meta=./twa-manifest.json --signingKeyPassword="password123" --keyPairPassword="password123"
         
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Tapatel-APK
         path: ./*.apk
+
